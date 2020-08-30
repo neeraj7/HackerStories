@@ -1,4 +1,4 @@
-package com.questionpro.interview.HackerStories;
+package com.questionpro.hackerstories;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
