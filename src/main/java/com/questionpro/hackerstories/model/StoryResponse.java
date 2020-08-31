@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class StoryResponse {
-	
-	private List<StoryModel> bestStories;
+
+  private List<StoryModel> bestStories;
 
 }

@@ -1,5 +1,13 @@
 package com.questionpro.hackerstories.constants;
 
+/**
+ * The Constants class.
+ * 
+ * It defines the constants used in the application.
+ * 
+ * @author neeraj.kumar
+ *
+ */
 public class Constants {
 
 	public static final String BASE_URL = "https://hacker-news.firebaseio.com/";
@@ -21,5 +29,13 @@ public class Constants {
 	public static final String BEST_STORIES = "beststories";
 	
 	public static final String BEST_STORIES_URL = BASE_URL + V0 + SLASH + BEST_STORIES + DOT_JSON ;
-
+	
+	public static final String STORY = "story";
+	
+	public static final String BEST_HYPHEN_STORIES = "/best-stories";
+	
+	public static final String PAST_HYPHEN_STORIES = "/past-stories";
+	
+	public static final String COMMENTS = "/comments";
+	
 }

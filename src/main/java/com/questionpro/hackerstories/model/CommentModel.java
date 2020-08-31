@@ -7,6 +7,6 @@ public class CommentModel {
 	
 	private String text;
 	private String user;
-	private float age;
+	private int userProfileAge;
 
 }
