@@ -7,6 +7,12 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 
+/**
+ * Configuration class for MongoDB.
+ * 
+ * @author neeraj.kumar
+ *
+ */
 @EnableReactiveMongoRepositories
 public class MongoConfig extends AbstractReactiveMongoConfiguration {
 

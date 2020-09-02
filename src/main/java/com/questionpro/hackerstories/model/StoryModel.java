@@ -7,6 +7,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 
+/**
+ * The StoryModel class.
+ * Holds the data fields required for response and DB.
+ * 
+ * @author neeraj.kumar
+ *
+ */
 @Data
 @Document
 public class StoryModel {

@@ -6,6 +6,13 @@ import javax.validation.constraints.NotNull;
 
 import lombok.Data;
 
+/**
+ * The Base class.
+ * Holds the common data fields for any item. i.e. story or comment.
+ * 
+ * @author neeraj.kumar
+ *
+ */
 @Data
 public class Base {
 	

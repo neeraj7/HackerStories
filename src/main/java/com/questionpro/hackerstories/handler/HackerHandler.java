@@ -2,17 +2,20 @@ package com.questionpro.hackerstories.handler;
 
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import com.questionpro.hackerstories.constants.Constants;
+import com.questionpro.hackerstories.model.HackerError;
 import com.questionpro.hackerstories.service.HackerStoryService;
 import reactor.core.publisher.Mono;
 
 /**
  * The HackerHandler class.
+ * 
+ * Acts as a mediator between request and business logic.
  * 
  * @author neeraj.kumar
  *
@@ -26,11 +29,6 @@ public class HackerHandler {
   @Autowired
   private HackerStoryService service;
 
-  public Mono<ServerResponse> hello(ServerRequest request) {
-    return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
-        .body(BodyInserters.fromValue("{ \"value\":\"Hello, great start.\"}"));
-  }
-
   /**
    * Get the best stories.
    * 
@@ -39,7 +37,7 @@ public class HackerHandler {
    */
   public Mono<ServerResponse> getBestStories(ServerRequest request) {
     return service.getBestStories()
-        .flatMap(res -> ServerResponse.ok().body(BodyInserters.fromValue(res)));
+        .flatMap(res -> ServerResponse.ok().body(BodyInserters.fromValue(res.getBestStories())));
   }
 
   /**
@@ -50,7 +48,7 @@ public class HackerHandler {
    */
   public Mono<ServerResponse> getPastStories(ServerRequest request) {
     return service.getPastStories()
-        .flatMap(res -> ServerResponse.ok().body(BodyInserters.fromValue(res)));
+        .flatMap(res -> ServerResponse.ok().body(BodyInserters.fromValue(res.getBestStories())));
   }
 
   /**
@@ -61,11 +59,15 @@ public class HackerHandler {
    */
   public Mono<ServerResponse> getTopCommentsOfGivenStory(ServerRequest request) {
     Optional<String> storyId = request.queryParam(Constants.STORY);
-    if (storyId.isPresent()) {
+    if (storyId.isPresent() && !storyId.get().isEmpty()) {
       return service.getTopCommentsOfGivenStory(storyId.get())
-          .flatMap(res -> ServerResponse.ok().body(BodyInserters.fromValue(res)));
+          .flatMap(res -> ServerResponse.ok().body(BodyInserters.fromValue(res.getTopComments())));
     } else {
-      return ServerResponse.badRequest().body(BodyInserters.fromValue("Please input the story id"));
+      HackerError error = new HackerError();
+      error.setErrorCode(HttpStatus.BAD_REQUEST.name());
+      error.setErrorStatus(HttpStatus.BAD_REQUEST.value());
+      error.setErrorMsg("Please input the story id");
+      return ServerResponse.badRequest().body(BodyInserters.fromValue(error));
     }
   }
 }

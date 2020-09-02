@@ -4,6 +4,12 @@ import java.util.List;
 
 import lombok.Data;
 
+/**
+ * The User class.
+ * 
+ * @author neeraj.kumar
+ *
+ */
 @Data
 public class User {
 	

@@ -12,19 +12,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.WebClient;
 import com.questionpro.hackerstories.constants.Constants;
+import com.questionpro.hackerstories.helper.WebClientHelper;
 import com.questionpro.hackerstories.model.CommentModel;
 import com.questionpro.hackerstories.model.CommentResponse;
 import com.questionpro.hackerstories.model.StoryModel;
 import com.questionpro.hackerstories.model.StoryResponse;
 import com.questionpro.hackerstories.model.api.Comment;
 import com.questionpro.hackerstories.model.api.Story;
+import com.questionpro.hackerstories.model.api.User;
 import com.questionpro.hackerstories.repository.StoryRepository;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
@@ -39,11 +39,6 @@ import reactor.core.publisher.Mono;
 @Component
 @Slf4j
 public class HackerStoryServiceImpl implements HackerStoryService {
-
-  /**
-   * WebClient instance.
-   */
-  private WebClient client = WebClient.create();
 
   /**
    * Map<k,v> used as in-memory cache.
@@ -61,6 +56,12 @@ public class HackerStoryServiceImpl implements HackerStoryService {
    */
   @Autowired
   private StoryRepository repo;
+  
+  /**
+   * WebClientHelper instance.
+   */
+  @Autowired
+  private WebClientHelper webClientHelper;
 
   /**
    * Expiration time of values in cache.
@@ -68,9 +69,15 @@ public class HackerStoryServiceImpl implements HackerStoryService {
   @Value("${config.cache.ttl.in.minutes:15}")
   private int cacheTTL;
   
+  /**
+   * Best stories limit for response.
+   */
   @Value("${config.best.stories.limit:10}")
   private int bestStoriesLimit;
   
+  /**
+   * Top comments limit on a given story for response.
+   */
   @Value("${config.top.story.comments.limit:10}")
   private int topStoryCommentsLimit;
 
@@ -84,9 +91,7 @@ public class HackerStoryServiceImpl implements HackerStoryService {
   public Mono<StoryResponse> getBestStories() {
     log.debug("Entered into getBestStories");
     return Mono.justOrEmpty(cache.get(Constants.BEST_STORIES))
-        .switchIfEmpty(client.get()
-            .uri(Constants.BEST_STORIES_URL)
-            .accept(MediaType.APPLICATION_JSON).exchange()
+        .switchIfEmpty(webClientHelper.getCall(Constants.BEST_STORIES_URL)
             .flatMap(res -> res.bodyToMono(Integer[].class))
             .flatMap(res -> getStoriesFromApi(res)));
   }
@@ -117,10 +122,7 @@ public class HackerStoryServiceImpl implements HackerStoryService {
    */
   private Mono<ClientResponse> getItemsFromApi(String item) {
     log.debug("Entered into getItemsFromApi with item id {}", item);
-    return client.get()
-        .uri(Constants.ITEM_URL.concat(item + Constants.DOT_JSON))
-        .accept(MediaType.APPLICATION_JSON)
-        .exchange();
+    return webClientHelper.getCall(Constants.ITEM_URL.concat(item + Constants.DOT_JSON));
   }
 
   /**
@@ -245,11 +247,21 @@ public class HackerStoryServiceImpl implements HackerStoryService {
    */
   private Mono<CommentModel> prepareCommentModel(Comment comment) {
     log.debug("Entered into prepareCommentModel with Comment {}", comment);
+    if (!ObjectUtils.isEmpty(comment.getBy())) {
+     return  webClientHelper.getCall(Constants.USER_URL.concat(comment.getBy()).concat(Constants.DOT_JSON))
+      .flatMap(res -> res.bodyToMono(User.class))
+      .flatMap(user -> {
+        CommentModel commentModel = new CommentModel();
+        commentModel.setUser(user.getId());
+        LocalDate startDate = LocalDate.ofInstant(Instant.ofEpochSecond(user.getCreated()), ZoneId.systemDefault());
+        commentModel.setUserProfileAge(Period.between(startDate, LocalDate.now()).getYears());
+        commentModel.setText(comment.getText());
+        return Mono.just(commentModel);
+      });
+    }
+    
     CommentModel commentModel = new CommentModel();
-    LocalDate startDate = LocalDate.ofInstant(Instant.ofEpochSecond(comment.getTime()), ZoneId.systemDefault());
-    commentModel.setUserProfileAge(Period.between(startDate, LocalDate.now()).getYears());
     commentModel.setText(comment.getText());
-    commentModel.setUser(comment.getBy());
     return Mono.just(commentModel);
   }
 }

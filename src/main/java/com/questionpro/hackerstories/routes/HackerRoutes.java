@@ -12,6 +12,7 @@ import com.questionpro.hackerstories.handler.HackerHandler;
 
 /**
  * The HackerRoutes class.
+ * Holds the mapping of supported http requests with respective handlers.
  * 
  * @author neeraj.kumar
  *
@@ -27,9 +28,7 @@ public class HackerRoutes {
   @Bean
   public RouterFunction<ServerResponse> route(HackerHandler handler) {
     return RouterFunctions
-        .route(RequestPredicates.GET("/hello")
-            .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)), handler::hello)
-        .andRoute(RequestPredicates.GET(Constants.BEST_HYPHEN_STORIES)
+        .route(RequestPredicates.GET(Constants.BEST_HYPHEN_STORIES)
             .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)), handler::getBestStories)
         .andRoute(RequestPredicates.GET(Constants.PAST_HYPHEN_STORIES)
             .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)), handler::getPastStories)
