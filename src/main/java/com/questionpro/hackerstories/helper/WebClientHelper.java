@@ -1,10 +1,11 @@
 package com.questionpro.hackerstories.helper;
 
+import javax.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import com.questionpro.hackerstories.constants.Constants;
 import reactor.core.publisher.Mono;
 
 /**
@@ -15,11 +16,22 @@ import reactor.core.publisher.Mono;
  */
 @Component
 public class WebClientHelper {
+  
+  /**
+   * Hackernews base api url.
+   */
+  @Value("${config.api.base.url:}")
+  private String baseUrl;
 
   /**
    * WebClient instance.
    */
-  private WebClient client = WebClient.create(Constants.BASE_URL);
+  private WebClient client;
+  
+  @PostConstruct
+  public void init() {
+    client = WebClient.create(baseUrl);
+  }
 
   /**
    * Make a get call to the given uri.

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
@@ -276,6 +277,9 @@ class SortByChildComments implements Comparator<Comment> {
   @Override
   public int compare(Comment o1, Comment o2) {
     if (ObjectUtils.isEmpty(o1.getKids())) {
+      if (ObjectUtils.isEmpty(o2.getKids())) {
+        return 0;
+      }
       return 1;
     } else if (ObjectUtils.isEmpty(o2.getKids())) {
       return -1;
