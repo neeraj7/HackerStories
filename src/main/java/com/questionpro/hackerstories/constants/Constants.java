@@ -10,8 +10,6 @@ package com.questionpro.hackerstories.constants;
  */
 public class Constants {
 
-	public static final String BASE_URL = "https://hacker-news.firebaseio.com/";
-
 	public static final String V0 = "v0";
 
 	public static final String ITEM = "item";
