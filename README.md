@@ -6,7 +6,7 @@ This backend API has been developed using [HackerNewsAPI](https://github.com/Hac
 
 ## Best Stories
 
-Get the top 10 best stories ranked by score in the last 15 minutes
+Get the top 10 best stories ranked by score in the last 15 minutes, the fresh data is cached for 15 minutes. So the user will get the same response for the next 15 minutes after the first fresh respones.
 
 ```javascript
 [
@@ -95,3 +95,7 @@ Get all the top 10 comments on a given story sorted by total number of child com
     }
 ]
 ```
+
+## Run in docker
+
+Build an image and run it in docker
