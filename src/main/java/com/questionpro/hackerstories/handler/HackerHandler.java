@@ -37,7 +37,10 @@ public class HackerHandler {
    */
   public Mono<ServerResponse> getBestStories(ServerRequest request) {
     return service.getBestStories()
-        .flatMap(res -> ServerResponse.ok().body(BodyInserters.fromValue(res.getBestStories())));
+        .flatMap(res -> ServerResponse.ok().body(BodyInserters.fromValue(res.getBestStories())))
+        .onErrorResume(error -> ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(BodyInserters.fromValue(
+                prepareErrorResponseBody(HttpStatus.INTERNAL_SERVER_ERROR, error.getMessage()))));
   }
 
   /**
@@ -48,7 +51,10 @@ public class HackerHandler {
    */
   public Mono<ServerResponse> getPastStories(ServerRequest request) {
     return service.getPastStories()
-        .flatMap(res -> ServerResponse.ok().body(BodyInserters.fromValue(res.getBestStories())));
+        .flatMap(res -> ServerResponse.ok().body(BodyInserters.fromValue(res.getBestStories())))
+        .onErrorResume(error -> ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(BodyInserters.fromValue(
+                prepareErrorResponseBody(HttpStatus.INTERNAL_SERVER_ERROR, error.getMessage()))));
   }
 
   /**
@@ -61,13 +67,21 @@ public class HackerHandler {
     Optional<String> storyId = request.queryParam(Constants.STORY);
     if (storyId.isPresent() && !storyId.get().isEmpty()) {
       return service.getTopCommentsOfGivenStory(storyId.get())
-          .flatMap(res -> ServerResponse.ok().body(BodyInserters.fromValue(res.getTopComments())));
+          .flatMap(res -> ServerResponse.ok().body(BodyInserters.fromValue(res.getTopComments())))
+          .onErrorResume(error -> ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body(BodyInserters.fromValue(
+                  prepareErrorResponseBody(HttpStatus.INTERNAL_SERVER_ERROR, error.getMessage()))));
     } else {
-      HackerError error = new HackerError();
-      error.setErrorCode(HttpStatus.BAD_REQUEST.name());
-      error.setErrorStatus(HttpStatus.BAD_REQUEST.value());
-      error.setErrorMsg("Please input the story id");
-      return ServerResponse.badRequest().body(BodyInserters.fromValue(error));
+      return ServerResponse.badRequest().body(BodyInserters
+          .fromValue(prepareErrorResponseBody(HttpStatus.BAD_REQUEST, "Story id is missing.")));
     }
+  }
+
+  private HackerError prepareErrorResponseBody(HttpStatus status, String errorMsg) {
+    HackerError error = new HackerError();
+    error.setErrorCode(status.name());
+    error.setErrorStatus(status.value());
+    error.setErrorMsg(errorMsg);
+    return error;
   }
 }
