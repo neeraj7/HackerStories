@@ -2,6 +2,7 @@ package com.questionpro.hackerstories.service;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.Calendar;
@@ -253,8 +254,8 @@ public class HackerStoryServiceImpl implements HackerStoryService {
       .flatMap(user -> {
         CommentModel commentModel = new CommentModel();
         commentModel.setUser(user.getId());
-        LocalDate startDate = LocalDate.ofInstant(Instant.ofEpochSecond(user.getCreated()), ZoneId.systemDefault());
-        commentModel.setUserProfileAge(Period.between(startDate, LocalDate.now()).getYears());
+        LocalDateTime startDate = LocalDateTime.ofInstant(Instant.ofEpochSecond(user.getCreated()), ZoneId.systemDefault());
+        commentModel.setUserProfileAge(Period.between(startDate.toLocalDate(), LocalDate.now()).getYears());
         commentModel.setText(comment.getText());
         return Mono.just(commentModel);
       });
