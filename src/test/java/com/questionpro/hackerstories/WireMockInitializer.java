@@ -7,23 +7,31 @@ import org.springframework.context.event.ContextClosedEvent;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 
-public class WireMockInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-  
+/**
+ * The WireMockInitializer class.
+ * Initializes the wiremock server for integration testing.
+ * 
+ * @author neeraj.kumar
+ *
+ */
+public class WireMockInitializer
+    implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
   @Override
   public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
     WireMockServer wireMockServer = new WireMockServer(new WireMockConfiguration().dynamicPort());
     wireMockServer.start();
- 
-    configurableApplicationContext.getBeanFactory().registerSingleton("wireMockServer", wireMockServer);
- 
+
+    configurableApplicationContext.getBeanFactory().registerSingleton("wireMockServer",
+        wireMockServer);
+
     configurableApplicationContext.addApplicationListener(applicationEvent -> {
       if (applicationEvent instanceof ContextClosedEvent) {
         wireMockServer.stop();
       }
     });
- 
-    TestPropertyValues
-      .of("config.api.base.url:http://localhost:" + wireMockServer.port() + "/")
-      .applyTo(configurableApplicationContext);
+
+    TestPropertyValues.of("config.api.base.url:http://localhost:" + wireMockServer.port() + "/")
+        .applyTo(configurableApplicationContext);
   }
 }

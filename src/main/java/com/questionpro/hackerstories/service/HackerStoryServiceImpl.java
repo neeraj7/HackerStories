@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
@@ -213,18 +212,18 @@ public class HackerStoryServiceImpl implements HackerStoryService {
   public Mono<CommentResponse> getTopCommentsOfGivenStory(String storyId) {
     log.debug("Entered into getTopCommentsOfGivenStory with story id {}", storyId);
     return getItemsFromApi(storyId).flatMap(res -> res.bodyToMono(Story.class))
-        .flatMapMany(r -> Flux.fromIterable(r.getKids()))
+        .flatMapMany(story -> Flux.fromIterable(story.getKids()))
         .flatMap(commentId -> {
           return getItemsFromApi(commentId.toString())
-              .flatMap(r -> r.bodyToMono(Comment.class));
+              .flatMap(res -> res.bodyToMono(Comment.class));
         }).collect(Collectors.toList())
-        .flatMapMany(list -> {
-          list.sort(new SortByChildComments());
-          return Flux.fromIterable(list);
+        .flatMapMany(comments -> {
+          comments.sort(new SortByChildComments());
+          return Flux.fromIterable(comments);
         }).take(this.topStoryCommentsLimit)
         .flatMap(comment -> prepareCommentModel(comment))
         .collect(Collectors.toList())
-        .flatMap(list -> prepareCommentResponse(list));
+        .flatMap(commentModels -> prepareCommentResponse(commentModels));
   }
   
   /**

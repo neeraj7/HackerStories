@@ -29,13 +29,13 @@ import reactor.test.StepVerifier;
  *
  */
 public class HackerStoryServiceImplTest {
-  
+
   /**
    * Instance of class under test.
    */
   @InjectMocks
   private HackerStoryServiceImpl service;
-  
+
   /**
    * Scheduler to schedule runnable tasks.
    */
@@ -47,47 +47,59 @@ public class HackerStoryServiceImplTest {
    */
   @Mock
   private StoryRepository repo;
-  
+
   /**
    * WebClientHelper instance.
    */
   @Mock
   private WebClientHelper webClientHelper;
-  
+
   @BeforeEach
   void init() {
     MockitoAnnotations.openMocks(this);
   }
-  
+
+  /**
+   * Test the get best stories method.
+   */
   @Test
   void testGetBestStories() {
     ClientResponse cr = Mockito.mock(ClientResponse.class);
-    Integer[] arr = {1,2,3};
+    String storyId = "24352471";
+    Integer[] arr = {Integer.valueOf(storyId)};
     StoryModel storyModel = new StoryModel();
     Mockito.when(repo.saveAll(Mockito.anyIterable())).thenReturn(Flux.just(storyModel));
-    
+
     ReflectionTestUtils.setField(service, "bestStoriesLimit", 1);
     Story story = new Story();
+    story.setBy("ach");
+    story.setId(storyId);
     Mockito.when(cr.bodyToMono(Story.class)).thenReturn(Mono.just(story));
-    
+
     Mockito.when(cr.bodyToMono(Integer[].class)).thenReturn(Mono.just(arr));
     Mockito.when(webClientHelper.getCall(Mockito.anyString())).thenReturn(Mono.just(cr));
     Mono<StoryResponse> response = service.getBestStories();
-    StepVerifier.create(response).expectNextMatches(r -> {
-      return null != r;
-    }).verifyComplete();
+    StepVerifier.create(response)
+        .expectNextMatches(r -> storyId.equals(r.getBestStories().get(0).getId())).verifyComplete();
   }
-  
+
+  /**
+   * Test the past stories method.
+   */
   @Test
   void testPastStories() {
     StoryModel storyModel = new StoryModel();
+    String storyId = "24352471";
+    storyModel.setId(storyId);
     Mockito.when(repo.findAll()).thenReturn(Flux.just(storyModel));
-    Mono<StoryResponse> response = service.getBestStories();
-    StepVerifier.create(response).expectNextMatches(r -> {
-      return null != r;
-    }).verifyComplete();
+    Mono<StoryResponse> response = service.getPastStories();
+    StepVerifier.create(response)
+        .expectNextMatches(r -> storyId.equals(r.getBestStories().get(0).getId())).verifyComplete();
   }
-  
+
+  /**
+   * Test the top comments of given story method.
+   */
   @Test
   void testGetTopCommentsOfGivenStory() {
     ClientResponse cr = Mockito.mock(ClientResponse.class);
@@ -99,7 +111,7 @@ public class HackerStoryServiceImplTest {
     Mockito.when(cr.bodyToMono(Story.class)).thenReturn(Mono.just(story));
     Comment comment = new Comment();
     Mockito.when(cr.bodyToMono(Comment.class)).thenReturn(Mono.just(comment));
-    
+
     Mono<CommentResponse> response = service.getTopCommentsOfGivenStory("storyId");
     StepVerifier.create(response).expectNextMatches(r -> {
       return null != r;
